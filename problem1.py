@@ -12,6 +12,10 @@ data = [[random.randint(a=0,b=1) for x in range(0,8)], # row 1
         [random.randint(a=0,b=1) for x in range(0,8)], # row 6
         [random.randint(a=0,b=1) for x in range(0,8)], # row 7
         [random.randint(a=0,b=1) for x in range(0,8)]] # row 8
+
+# this is the real grid size we should be using 
+data = [[random.randint(a=0,b=1) for x in range(0,50)] # row 1
+        for x in range(0,100)] 
 # display the 2d data matrix
 
 
