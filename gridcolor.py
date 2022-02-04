@@ -1,6 +1,7 @@
 import tkinter as tk
 import random # to generate a random no. for the index to block
 import os
+import math
 #from os.path import exists
 
 
@@ -24,6 +25,11 @@ starty = random.randint(0,50)
 
 endx = random.randint(0,100)
 endy = random.randint(0,50)
+
+# adds as red dot the start and end points in the graph, its a bit hard to see with the 1000 500 but if you wann test it out reduce grid to 10 x 5
+canvas.create_line(startx, starty, startx+1, starty, fill="#ff0000") #
+canvas.create_line(endx, endy, endx+1, endy, fill="#ff0000")
+
 
 string = str(startx) + " " + str(starty) + "\n"
 f.write(string)
@@ -50,5 +56,11 @@ for i in range (0,1000,10): # the for loop lets us make the squares with size 10
         string = xs + " " + ys + " " + bs + "\n"
         
         f.write(string)
+
+def heuristic(x,y):
+    return (math.sqrt(2)* min(abs(x-endx)-abs(y-endy)))+  max(abs(x-endx)-abs(y-endy))-min(abs(x-endx)-abs(y-endy))
+
+
+
 
 window.mainloop()
