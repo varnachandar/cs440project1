@@ -57,10 +57,15 @@ for i in range (0,1000,10): # the for loop lets us make the squares with size 10
         
         f.write(string)
 
+<<<<<<< HEAD
 def heuristic(x,y):
     return (math.sqrt(2)* min(abs(x-endx)-abs(y-endy)))+  max(abs(x-endx)-abs(y-endy))-min(abs(x-endx)-abs(y-endy))
 
 
 
+=======
+
+f.close()
+>>>>>>> 1919c39987020241671c1a039658a1bb541d8e8c
 
 window.mainloop()
