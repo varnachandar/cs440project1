@@ -19,6 +19,18 @@ while len(coordinates) < 500: # 500 is 10% of the grid coordinates
 
 b = 0
 
+startx = random.randint(0,100)
+starty = random.randint(0,50)
+
+endx = random.randint(0,100)
+endy = random.randint(0,50)
+
+string = str(startx) + " " + str(starty) + "\n"
+f.write(string)
+
+string = str(endx) + " " + str(endy) + "\n"
+f.write(string)
+
 for i in range (0,1000,10): # the for loop lets us make the squares with size 10 across the entire canvas
   for j in range(0,1000,10): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
         if (i,j) in coordinates: # this is the part that we will have to randomize
