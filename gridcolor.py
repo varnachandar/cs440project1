@@ -32,7 +32,7 @@ string = str(endx) + " " + str(endy) + "\n"
 f.write(string)
 
 for i in range (0,1000,10): # the for loop lets us make the squares with size 10 across the entire canvas
-  for j in range(0,1000,10): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
+  for j in range(0,500,10): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
         if (i,j) in coordinates: # this is the part that we will have to randomize
             #create rectangle has parameters x1,y1,x2,y2 where x1 y1 is the start coordinate and x2,y2 is the end coordinate
             #outline is the outline color and fill is the fill color
