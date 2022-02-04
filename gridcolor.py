@@ -51,4 +51,7 @@ for i in range (0,1000,10): # the for loop lets us make the squares with size 10
         
         f.write(string)
 
+
+f.close()
+
 window.mainloop()
