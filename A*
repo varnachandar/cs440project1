@@ -169,7 +169,7 @@ def main():
 
         #successor = []
         findSuccessor(successor,x,y)
-        print(successor)
+        #print(successor)
         
 
         while len(successor) != 0:
