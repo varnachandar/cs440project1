@@ -1,0 +1,194 @@
+import tkinter as tk
+import random # to generate a random no. for the index to block
+import os
+import math
+
+f = open("grid.txt", "r")
+
+# some sort of list with 0's and 1's for blocked and blocked in order of the coordinates use an array
+
+# corr coordinate is (x-1)*50 + 2 + y only +1 not +2 bcs the file starts at place 1 or no adding? just -1
+
+# manually find neightbors: 
+    # above: x,y+1
+    # below : x,y-1
+    # left: x-1,y
+    # right: x+1, y
+    # diagonal up right: x+1, y+1
+    # diagonal up left: x-1, y+1
+    # diagonal down right: x+1, y-1
+    # diagonal down left: x-1, y-1
+        # with diagonal how would we check for blocked... since only the top left is marked as blocked... this can happen if we go diagonally up right 
+            # do a case so that if the one directly above is blocked then we can't go top right
+
+        
+
+blocked = []
+gval = []
+parent = []
+next(f) # skips the first two lines of the file with the start and end index since those are formated diff
+next(f)
+
+
+for line in f:
+    x,y,b = line.split() # don't rly need x and y we can find them on our own
+    b = int(b)
+    blocked.append(b) 
+    gval.append(0) # all the g vals are initialy 0
+    parent.append([0,0]) # all of the parents are just (0,0) initially
+
+#print(blocked) this was just to test that it was working to an extent
+
+fringe = [] # can insert before other elements according to the distance 
+
+closed = set() # no duplicates allowed and can find if smtg is in it or not and order of adding doesn't matter
+
+
+endx = 36
+endy = 0
+
+def heuristic(x,y):
+   #return 0
+   a = math.sqrt(2)
+   e = min(abs(x-endx), abs(y-endy))
+   i = max(abs(x-endx), abs(y-endy))
+   o = min(abs(x-endx), abs(y-endy))
+   u = (a*e) + i - o
+   
+   return u
+   #return ((math.sqrt(2)* min(abs(x-36)-abs(y-0)))+max(abs(x-36)-abs(y-0))-min(abs(x-36)-abs(y-0)))
+   #return (math.sqrt(2)* min(abs(x-endx)-abs(y-endy)))+  max(abs(x-endx)-abs(y-endy))-min(abs(x-endx)-abs(y-endy))
+
+#def g(i):
+ #   return 0
+
+def findIndex (x,y): # gives the index for the arrays for gval and parent
+    return ((x-1)*50) + y -1
+
+def cfunc(a, b, c, d): # finds the distance btwn two points
+    xd = c-a
+    xd = math.pow(xd,2)
+    yd = d-b
+    yd = math.pow(yd,2)
+    d = math.sqrt(xd+yd)
+    return d
+
+def elementOf(arrayx, x, y): # using an array with the elements in the format [x,y], val; want to know if a certain coordinate is already in the array
+    if (len(arrayx) == 0):
+        return 0
+
+    for i in (0,len(arrayx)-1):
+        xval = arrayx[i][0][0] 
+        yval = arrayx[i][0][1]
+        if x == xval and y == yval:
+            return 1 # 1 if the coordinate is in the array already
+    return 0
+
+def remove(arrayx,x,y): # want to remove a certain coordinate from the array again in the format [x,y],val
+    if (len(arrayx) == 0):
+        return
+
+    for i in (0,len(arrayx)-1):
+        xval = arrayx[i][0][0]
+        yval = arrayx[i][0][1]
+        if x == xval and y == yval:
+            arrayx.pop(i)
+            return
+
+def insert(arrayx, x, y, val): # insert to an array of format [x,y]
+    if(len(arrayx) == 0): # if the array has ntg in it, just append
+        arrayx.append([[x,y],val])
+        return 
+
+    for i in (0,len(arrayx)-1): # if the array has values, to make it a priority queue, insert it a certain way
+        value = arrayx[i][1]
+        if (val<value):
+            arrayx.insert(i,[[x,y],val]) # insert in a way that the first element will be smallest and we go in increasing order and the last is the largest val
+            return
+    arrayx.append([[x,y],val]) # add to the end if it has the greatest val
+
+
+def UpdateVertex(a,b, c, d): 
+    index_s = findIndex(a,b)
+    index_sprime = findIndex(c,d)
+    cval = cfunc(a,b,c,d)
+
+    if gval[index_s] + cval < gval[index_sprime]:
+        gval[index_sprime] = gval[index_s] +cval
+        parent[index_sprime] = [a,b]
+        if elementOf(fringe,c,d):
+            remove(fringe,c,d)
+        
+        val = gval[index_sprime] + heuristic(c,d)
+        insert(fringe, c, d, val)
+
+
+#instead of this use startx and starty
+startx = 91
+starty = 37
+
+successor = [] 
+
+def findSuccessor (arrayx,x,y): # finding the 8 neighbors
+    if (x+1 < 101):
+        arrayx.append([x+1,y])
+        if(y+1 < 51):
+            arrayx.append([x+1,y+1])
+        if(y-1 >= 0):
+            arrayx.append([x+1,y-1])
+    if (x-1 >= 0):
+        arrayx.append([x-1,y])
+        if(y+1 < 51):
+            arrayx.append([x-1,y+1])
+        if(y-1 >= 0):
+            arrayx.append([x-1,y-1])
+    if(y+1 < 51):
+        arrayx.append([x,y+1])
+    if(y-1 >= 0):
+        arrayx.append([x,y-1])
+
+
+
+def main():
+    indexS = findIndex(startx,starty)
+    gval[indexS] = 0
+    parent[indexS] = [startx,starty]
+    val = gval[indexS]+heuristic(startx,starty)
+    insert(fringe, startx,starty,val)
+
+    while len(fringe) != 0:
+        [[x,y],v] = fringe.pop()
+        #print(x)
+        #print(y)
+        #print(v)
+        if x == endx and y == endy:
+            print("hi")
+            return 
+
+        closed.add((x,y))
+
+        #successor = []
+        findSuccessor(successor,x,y)
+        print(successor)
+        
+
+        while len(successor) != 0:
+            [sx,sy] = successor.pop()
+            if not (sx, sy) in closed:
+                if not elementOf(fringe,sx,sy):
+                    si = findIndex(sx,sy)
+                    gval[si] = float('inf')
+                UpdateVertex(x,y,sx,sy)
+
+    print("bye")
+    return 
+    
+
+
+    
+
+
+if __name__ == "__main__":
+    main()
+
+
