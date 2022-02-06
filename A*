@@ -26,17 +26,36 @@ f = open("grid.txt", "r")
 blocked = []
 gval = []
 parent = []
-next(f) # skips the first two lines of the file with the start and end index since those are formated diff
-next(f)
 
 
+
+
+#next(f) # skips the first two lines of the file with the start and end index since those are formated diff
+#next(f)
+
+place = 0 # to keep track of just the first two lines
 for line in f:
-    x,y,b = line.split() # don't rly need x and y we can find them on our own
-    b = int(b)
-    blocked.append(b) 
-    gval.append(0) # all the g vals are initialy 0
-    parent.append([0,0]) # all of the parents are just (0,0) initially
+    if place == 1:
+        endx, endy = line.split()
+        endx = int(endx)
+        endy = int(endy)
+        place = place+1
+    elif place == 0:
+        startx,starty = line.split()
+        startx = int(startx)
+        starty = int(starty)
+        place = place+1
+    else:
+        x,y,b = line.split() # don't rly need x and y we can find them on our own
+        b = int(b)
+        blocked.append(b) 
+        gval.append(0) # all the g vals are initialy 0
+        parent.append([0,0]) # all of the parents are just (0,0) initially
 
+#print(startx)
+#print(starty)
+#print(endx)
+#print(endy)
 #print(blocked) this was just to test that it was working to an extent
 
 fringe = [] # can insert before other elements according to the distance 
@@ -44,8 +63,8 @@ fringe = [] # can insert before other elements according to the distance
 closed = set() # no duplicates allowed and can find if smtg is in it or not and order of adding doesn't matter
 
 
-endx = 36
-endy = 0
+#endx = 36
+#endy = 0
 
 def heuristic(x,y):
    #return 0
@@ -124,8 +143,7 @@ def UpdateVertex(a,b, c, d):
 
 
 #instead of this use startx and starty
-startx = 91
-starty = 37
+
 
 successor = [] 
 
