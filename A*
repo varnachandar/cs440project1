@@ -26,17 +26,36 @@ f = open("grid.txt", "r")
 blocked = []
 gval = []
 parent = []
-next(f) # skips the first two lines of the file with the start and end index since those are formated diff
-next(f)
 
 
+
+
+#next(f) # skips the first two lines of the file with the start and end index since those are formated diff
+#next(f)
+
+place = 0 # to keep track of just the first two lines
 for line in f:
-    x,y,b = line.split() # don't rly need x and y we can find them on our own
-    b = int(b)
-    blocked.append(b) 
-    gval.append(0) # all the g vals are initialy 0
-    parent.append([0,0]) # all of the parents are just (0,0) initially
+    if place == 1:
+        endx, endy = line.split()
+        endx = int(endx)
+        endy = int(endy)
+        place = place+1
+    elif place == 0:
+        startx,starty = line.split()
+        startx = int(startx)
+        starty = int(starty)
+        place = place+1
+    else:
+        x,y,b = line.split() # don't rly need x and y we can find them on our own
+        b = int(b)
+        blocked.append(b) 
+        gval.append(0) # all the g vals are initialy 0
+        parent.append([0,0]) # all of the parents are just (0,0) initially
 
+#print(startx)
+#print(starty)
+#print(endx)
+#print(endy)
 #print(blocked) this was just to test that it was working to an extent
 
 fringe = [] # can insert before other elements according to the distance 
@@ -44,8 +63,8 @@ fringe = [] # can insert before other elements according to the distance
 closed = set() # no duplicates allowed and can find if smtg is in it or not and order of adding doesn't matter
 
 
-endx = 36
-endy = 0
+#endx = 36
+#endy = 0
 
 def heuristic(x,y):
    #return 0
@@ -124,28 +143,35 @@ def UpdateVertex(a,b, c, d):
 
 
 #instead of this use startx and starty
-startx = 91
-starty = 37
+
 
 successor = [] 
 
 def findSuccessor (arrayx,x,y): # finding the 8 neighbors
     if (x+1 < 101):
-        arrayx.append([x+1,y])
-        if(y+1 < 51):
+        if(not ((y == 1 and blocked[findIndex(x,y)] == 1) or (y == 50 and blocked[findIndex(x,y+1)] == 1))): # if we are at the top or bottom and its blocked
+            if(not(blocked[findIndex(x,y)] == 1 and blocked[findIndex(x,y+1)] == 1)): # if going right and it is blocked and the one above is blocked
+                arrayx.append([x+1,y])
+        if(y+1 < 51) and blocked[findIndex(x,y+1)] != 1: # we aren't going diagonal up right through a blocked one
             arrayx.append([x+1,y+1])
-        if(y-1 >= 0):
+        if(y-1 > 0) and blocked[findIndex(x,y)] != 1: #don't go diagonally down right through blocked one
             arrayx.append([x+1,y-1])
-    if (x-1 >= 0):
-        arrayx.append([x-1,y])
-        if(y+1 < 51):
+    if (x-1 > 0):
+        if(not ((y == 1 and blocked[findIndex(x-1,y)] == 1) or (y == 50 and blocked[findIndex(x-1,y+1)] == 1))): # if we are at the top or bottom and its blocked
+            if(not(blocked[findIndex(x-1,y)] == 1 and blocked[findIndex(x-1,y+1)] == 1)): # if going left and the left one and the one above the left one is blocked
+                arrayx.append([x-1,y])
+        if(y+1 < 51) and blocked[findIndex(x-1,y-1)] != 1: # we aren't going diagonal up left through a blocked one
             arrayx.append([x-1,y+1])
-        if(y-1 >= 0):
+        if(y-1 > 0) and blocked[findIndex(x-1,y)] != 1: # not going diagonally down left
             arrayx.append([x-1,y-1])
     if(y+1 < 51):
-        arrayx.append([x,y+1])
-    if(y-1 >= 0):
-        arrayx.append([x,y-1])
+        if not ((x == 1 and blocked[findIndex(x,y+1)] == 1)  or (x == 100 and blocked[findIndex(x-1,y+1)] == 1)): # on the edge and blocked
+            if(not(blocked[findIndex(x,y+1)] == 1 and blocked[findIndex(x-1,y+1)] == 1)): # if going up, the one above and the one to the left of the above isn't blocked
+                arrayx.append([x,y+1])
+    if(y-1 > 0):
+        if not ((x == 1 and blocked[findIndex(x,y)] == 1)  or (x == 100 and blocked[findIndex(x-1,y)] == 1)): # on the edge and blocked
+             if(not(blocked[findIndex(x,y-1)] == 1 and blocked[findIndex(x-1,y-1)] == 1)): # if going down, the one below and the one to the left of the below isn't blocked
+                arrayx.append([x,y-1])
 
 
 
@@ -169,7 +195,7 @@ def main():
 
         #successor = []
         findSuccessor(successor,x,y)
-        #print(successor)
+       # print(successor)
         
 
         while len(successor) != 0:
