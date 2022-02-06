@@ -131,21 +131,29 @@ successor = []
 
 def findSuccessor (arrayx,x,y): # finding the 8 neighbors
     if (x+1 < 101):
-        arrayx.append([x+1,y])
-        if(y+1 < 51):
+        if(not ((y == 1 and blocked[findIndex(x,y)] == 1) or (y == 50 and blocked[findIndex(x,y+1)] == 1))): # if we are at the top or bottom and its blocked
+            if(not(blocked[findIndex(x,y)] == 1 and blocked[findIndex(x,y+1)] == 1)): # if going right and it is blocked and the one above is blocked
+                arrayx.append([x+1,y])
+        if(y+1 < 51) and blocked[findIndex(x,y+1)] != 1: # we aren't going diagonal up right through a blocked one
             arrayx.append([x+1,y+1])
-        if(y-1 >= 0):
+        if(y-1 > 0) and blocked[findIndex(x,y)] != 1: #don't go diagonally down right through blocked one
             arrayx.append([x+1,y-1])
-    if (x-1 >= 0):
-        arrayx.append([x-1,y])
-        if(y+1 < 51):
+    if (x-1 > 0):
+        if(not ((y == 1 and blocked[findIndex(x-1,y)] == 1) or (y == 50 and blocked[findIndex(x-1,y+1)] == 1))): # if we are at the top or bottom and its blocked
+            if(not(blocked[findIndex(x-1,y)] == 1 and blocked[findIndex(x-1,y+1)] == 1)): # if going left and the left one and the one above the left one is blocked
+                arrayx.append([x-1,y])
+        if(y+1 < 51) and blocked[findIndex(x-1,y-1)] != 1: # we aren't going diagonal up left through a blocked one
             arrayx.append([x-1,y+1])
-        if(y-1 >= 0):
+        if(y-1 > 0) and blocked[findIndex(x-1,y)] != 1: # not going diagonally down left
             arrayx.append([x-1,y-1])
     if(y+1 < 51):
-        arrayx.append([x,y+1])
-    if(y-1 >= 0):
-        arrayx.append([x,y-1])
+        if not ((x == 1 and blocked[findIndex(x,y+1)] == 1)  or (x == 100 and blocked[findIndex(x-1,y+1)] == 1)): # on the edge and blocked
+            if(not(blocked[findIndex(x,y+1)] == 1 and blocked[findIndex(x-1,y+1)] == 1)): # if going up, the one above and the one to the left of the above isn't blocked
+                arrayx.append([x,y+1])
+    if(y-1 > 0):
+        if not ((x == 1 and blocked[findIndex(x,y)] == 1)  or (x == 100 and blocked[findIndex(x-1,y)] == 1)): # on the edge and blocked
+             if(not(blocked[findIndex(x,y-1)] == 1 and blocked[findIndex(x-1,y-1)] == 1)): # if going down, the one below and the one to the left of the below isn't blocked
+                arrayx.append([x,y-1])
 
 
 
@@ -169,7 +177,7 @@ def main():
 
         #successor = []
         findSuccessor(successor,x,y)
-        #print(successor)
+       # print(successor)
         
 
         while len(successor) != 0:
