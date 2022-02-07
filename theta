@@ -3,7 +3,7 @@ import random # to generate a random no. for the index to block
 import os
 import math
 
-f = open("grid.txt", "r")
+f = open("gridtest.txt", "r")
 
 
 blocked = []
@@ -178,15 +178,15 @@ def UpdateVertex(a,b, c, d):
 
             val = gval[index_sprime]+heuristic(c,d)
             insert(fringe, c, d, val)
-        else:
-            if gval[index_s] + cval  < gval[index_sprime]:
-                gval[index_sprime] = gval[index_s] + cval
-                parent[index_sprime] = [a,b]
-                if elementOf(fringe,c,d):
-                    remove(fringe,c,d)
+    else:
+        if gval[index_s] + cval  < gval[index_sprime]:
+            gval[index_sprime] = gval[index_s] + cval
+            parent[index_sprime] = [a,b]
+            if elementOf(fringe,c,d):
+                remove(fringe,c,d)
                 
-                val = gval[index_sprime]+heuristic(c,d)
-                insert(fringe,c,d,val)
+            val = gval[index_sprime]+heuristic(c,d)
+            insert(fringe,c,d,val)
 
 
 successor = [] 
