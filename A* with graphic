@@ -1,7 +1,58 @@
+from contextlib import nullcontext
 import tkinter as tk
 import random # to generate a random no. for the index to block
 import os
 import math
+import sys
+#from os.path import exists
+
+f = open("grid.txt", "r")
+
+window = tk.Tk()
+
+canvas = tk.Canvas(window, bg='white', height=1000, width=1000) #using the 1000 1000 gives a height of 50 and width of 100 tbh idk why
+canvas.pack(fill=tk.BOTH, expand=True)
+
+coordinates = set()
+place = 0
+
+for line in f:
+    if place == 1:
+        endx, endy = line.split()
+        endx = int(endx) *10
+        endy = int(endy) * 10
+        place = place+1
+    elif place == 0:
+        startx,starty = line.split()
+        startx = int(startx) *10
+        starty = int(starty) *10
+        place = place+1
+    else:
+        x,y,b = line.split() 
+        b = int(b)
+        x = int(x)
+        y = int(y)
+        if (b == 1):
+            coordinates.add((x*10,y*10))
+
+        
+for i in range (0,1000,10): # the for loop lets us make the squares with size 10 across the entire canvas
+  for j in range(0,500,10): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
+        if (i,j) in coordinates: # this is the part that we will have to randomize
+            #create rectangle has parameters x1,y1,x2,y2 where x1 y1 is the start coordinate and x2,y2 is the end coordinate
+            #outline is the outline color and fill is the fill color
+           canvas.create_rectangle(i, j, i+10, j+10, outline = 'black', fill='gray')
+        else:
+           canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'white')
+
+canvas.create_oval(startx-4, starty-4, startx+4, starty+4, outline = 'black', fill='red') 
+canvas.create_oval(endx-4, endy-4, endx+4, endy+4, outline = 'black', fill='red')
+
+f.close()
+
+
+
+#### A* STARTS FROM HERE
 
 f = open("grid.txt", "r")
 
@@ -49,14 +100,15 @@ for line in f:
         x,y,b = line.split() # don't rly need x and y we can find them on our own
         b = int(b)
         blocked.append(b) 
-        gval.append(0) # all the g vals are initialy 0
+        gval.append(float('inf')) # all the g vals are initialy 0
         parent.append([0,0]) # all of the parents are just (0,0) initially
+
 
 #print(startx)
 #print(starty)
 #print(endx)
 #print(endy)
-#print(blocked) this was just to test that it was working to an extent
+#print(blocked) #this was just to test that it was working to an extent
 
 fringe = [] # can insert before other elements according to the distance 
 
@@ -78,8 +130,6 @@ def heuristic(x,y):
    #return ((math.sqrt(2)* min(abs(x-36)-abs(y-0)))+max(abs(x-36)-abs(y-0))-min(abs(x-36)-abs(y-0)))
    #return (math.sqrt(2)* min(abs(x-endx)-abs(y-endy)))+  max(abs(x-endx)-abs(y-endy))-min(abs(x-endx)-abs(y-endy))
 
-#def g(i):
- #   return 0
 
 def findIndex (x,y): # gives the index for the arrays for gval and parent
     return ((x-1)*50) + y -1
@@ -121,7 +171,7 @@ def insert(arrayx, x, y, val): # insert to an array of format [x,y]
 
     for i in (0,len(arrayx)-1): # if the array has values, to make it a priority queue, insert it a certain way
         value = arrayx[i][1]
-        if (val<value):
+        if (val<=value):
             arrayx.insert(i,[[x,y],val]) # insert in a way that the first element will be smallest and we go in increasing order and the last is the largest val
             return
     arrayx.append([[x,y],val]) # add to the end if it has the greatest val
@@ -138,8 +188,14 @@ def UpdateVertex(a,b, c, d):
         if elementOf(fringe,c,d):
             remove(fringe,c,d)
         
-        val = gval[index_sprime] + heuristic(c,d)
+        val = gval[index_sprime] #+ heuristic(c,d)
         insert(fringe, c, d, val)
+    else: # this changed nothing
+        if not elementOf(fringe,c,d):
+            val = gval[index_sprime] #+ heuristic(c,d)
+            insert(fringe,c,d,val)
+        
+
 
 
 #instead of this use startx and starty
@@ -151,27 +207,35 @@ def findSuccessor (arrayx,x,y): # finding the 8 neighbors
     if (x+1 < 101):
         if(not ((y == 1 and blocked[findIndex(x,y)] == 1) or (y == 50 and blocked[findIndex(x,y+1)] == 1))): # if we are at the top or bottom and its blocked
             if(not(blocked[findIndex(x,y)] == 1 and blocked[findIndex(x,y+1)] == 1)): # if going right and it is blocked and the one above is blocked
-                arrayx.append([x+1,y])
+                if not (x+1, y) in closed:
+                    arrayx.append([x+1,y])
         if(y+1 < 51) and blocked[findIndex(x,y+1)] != 1: # we aren't going diagonal up right through a blocked one
-            arrayx.append([x+1,y+1])
+            if not (x+1, y+1) in closed:
+                arrayx.append([x+1,y+1])
         if(y-1 > 0) and blocked[findIndex(x,y)] != 1: #don't go diagonally down right through blocked one
-            arrayx.append([x+1,y-1])
+            if not (x+1, y-1) in closed:
+                arrayx.append([x+1,y-1])
     if (x-1 > 0):
         if(not ((y == 1 and blocked[findIndex(x-1,y)] == 1) or (y == 50 and blocked[findIndex(x-1,y+1)] == 1))): # if we are at the top or bottom and its blocked
             if(not(blocked[findIndex(x-1,y)] == 1 and blocked[findIndex(x-1,y+1)] == 1)): # if going left and the left one and the one above the left one is blocked
-                arrayx.append([x-1,y])
+                if not (x-1, y) in closed:
+                    arrayx.append([x-1,y])
         if(y+1 < 51) and blocked[findIndex(x-1,y-1)] != 1: # we aren't going diagonal up left through a blocked one
-            arrayx.append([x-1,y+1])
+            if not (x-1, y+1) in closed:
+                arrayx.append([x-1,y+1])
         if(y-1 > 0) and blocked[findIndex(x-1,y)] != 1: # not going diagonally down left
-            arrayx.append([x-1,y-1])
+            if not (x-1, y-1) in closed:
+                arrayx.append([x-1,y-1])
     if(y+1 < 51):
         if not ((x == 1 and blocked[findIndex(x,y+1)] == 1)  or (x == 100 and blocked[findIndex(x-1,y+1)] == 1)): # on the edge and blocked
             if(not(blocked[findIndex(x,y+1)] == 1 and blocked[findIndex(x-1,y+1)] == 1)): # if going up, the one above and the one to the left of the above isn't blocked
-                arrayx.append([x,y+1])
+                if not (x, y+1) in closed:
+                    arrayx.append([x,y+1])
     if(y-1 > 0):
         if not ((x == 1 and blocked[findIndex(x,y)] == 1)  or (x == 100 and blocked[findIndex(x-1,y)] == 1)): # on the edge and blocked
              if(not(blocked[findIndex(x,y-1)] == 1 and blocked[findIndex(x-1,y-1)] == 1)): # if going down, the one below and the one to the left of the below isn't blocked
-                arrayx.append([x,y-1])
+                if not (x, y-1) in closed:
+                    arrayx.append([x,y-1])
 
 
 def traceBack (x,y):
@@ -228,29 +292,49 @@ def traceBack (x,y):
 # but what if it goes across a blocked square... not actually going inside but across the top or the left?
 # go to the one above? but we don't know if it is going across and how?
 # also what if the first move is going left or up, so then we don't exactly fill in the square for startx,starty
-    
+
+def tracetest():
+    index = findIndex(endx,endy)
+    [px,py] = parent[index]
+
+    while not (px == startx and py == starty):
+        print(parent[index])
+        index = findIndex(px,py)
+        [px,py] = parent[index]
+
+
+
 
 def main():
     indexS = findIndex(startx,starty)
     gval[indexS] = 0
     parent[indexS] = [startx,starty]
-    val = gval[indexS]+heuristic(startx,starty)
+    val = gval[indexS] #+heuristic(startx,starty)
     insert(fringe, startx,starty,val)
 
     while len(fringe) != 0:
+        #print(fringe)
         [[x,y],v] = fringe.pop()
         #print(x)
         #print(y)
         #print(v)
         if x == endx and y == endy:
+            #print(gval)
             print("path found")
-            return 
+            #print(parent) # at the end EVERY SINGLE vertex HAS a parent
+            traceBack(x,y)
+            #tracetest()
+            #print("TRACETEST RAN")
+            return
+            #window.mainloop()
+            #sys.exit()
+
 
         closed.add((x,y))
 
         #successor = []
         findSuccessor(successor,x,y)
-       # print(successor)
+        #print(successor)
         
 
         while len(successor) != 0:
@@ -259,7 +343,10 @@ def main():
                 if not elementOf(fringe,sx,sy):
                     si = findIndex(sx,sy)
                     gval[si] = float('inf')
+                    parent[si] = None
                 UpdateVertex(x,y,sx,sy)
+        #print(successor) # should be empty
+        #print(fringe)
 
     print("no path found")
     return 
@@ -273,3 +360,6 @@ if __name__ == "__main__":
     main()
 
 
+
+
+window.mainloop()
