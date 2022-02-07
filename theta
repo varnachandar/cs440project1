@@ -3,7 +3,7 @@ import random # to generate a random no. for the index to block
 import os
 import math
 
-f = open("gridtest.txt", "r")
+f = open("grid.txt", "r")
 
 
 blocked = []
@@ -230,7 +230,7 @@ def main():
         [[x,y],v] = fringe.pop()
        
         if x == endx and y == endy:
-            print("hi")
+            print("path found")
             return 
 
         closed.add((x,y))
@@ -248,7 +248,7 @@ def main():
                     gval[si] = float('inf')
                 UpdateVertex(x,y,sx,sy)
 
-    print("bye")
+    print("no path found")
     return 
     
 
