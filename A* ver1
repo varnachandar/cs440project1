@@ -227,7 +227,7 @@ def findSuccessor (x,y): # finding the 8 neighbors # ERROR WAS HERE # HAD TO USE
         if((y+1<51) and (blocked[findIndex(x,y)] == 0)): #don't go diagonally down right through blocked one
             successor.append([x+1,y+1])
 
-    if (x-1 > 0):
+    elif (x-1 > 0):
         if y == 1:
             if not(blocked[findIndex(x-1,y)] == 1):
                 successor.append([x-1,y])
@@ -242,7 +242,7 @@ def findSuccessor (x,y): # finding the 8 neighbors # ERROR WAS HERE # HAD TO USE
         if((y+1 < 51) and (blocked[findIndex(x-1,y)] == 0)): # not going diagonally down left
             successor.append([x-1,y+1])
 
-    if(y+1 < 51):
+    elif(y+1 < 51):
         if x==1:
             if not (blocked[findIndex(x,y)] == 1):
                 successor.append([x,y+1])
@@ -252,7 +252,7 @@ def findSuccessor (x,y): # finding the 8 neighbors # ERROR WAS HERE # HAD TO USE
         elif not ((blocked[findIndex(x,y)] == 1) and (blocked[findIndex(x-1,y)] == 1)):
             successor.append([x,y+1])
 
-    if(y-1 > 0):
+    elif(y-1 > 0):
         if x == 1:
             if not(blocked[findIndex(x,y-1)] == 1):
                 successor.append([x,y-1])
