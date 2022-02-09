@@ -1,0 +1,445 @@
+from contextlib import nullcontext
+from tkinter import *
+import tkinter as tk
+import tkinter.messagebox
+import random # to generate a random no. for the index to block
+import os
+import math
+import sys
+#from os.path import exists
+
+f = open("grid.txt", "r")
+
+window = tk.Tk()
+
+canvas = tk.Canvas(window, bg='white', height=1000, width=1000) #using the 1000 1000 gives a height of 50 and width of 100 tbh idk why
+canvas.pack(fill=tk.BOTH, expand=True)
+
+
+coordinates = set()
+place = 0
+
+for line in f:
+    if place == 1:
+        endx, endy = line.split()
+        endx = int(endx) *10
+        endy = int(endy) * 10
+        place = place+1
+    elif place == 0:
+        startx,starty = line.split()
+        startx = int(startx) *10
+        starty = int(starty) *10
+        place = place+1
+    else:
+        x,y,b = line.split() 
+        b = int(b)
+        x = int(x)
+        y = int(y)
+        if (b == 1):
+            coordinates.add((x*10,y*10))
+
+        
+for i in range (0,1000,10): # the for loop lets us make the squares with size 10 across the entire canvas
+  for j in range(0,500,10): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
+        if (i,j) in coordinates: # this is the part that we will have to randomize
+            #create rectangle has parameters x1,y1,x2,y2 where x1 y1 is the start coordinate and x2,y2 is the end coordinate
+            #outline is the outline color and fill is the fill color
+           canvas.create_rectangle(i, j, i+10, j+10, outline = 'black', fill='gray')
+        else:
+           canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'white')
+
+canvas.create_oval(startx-4, starty-4, startx+4, starty+4, outline = 'black', fill='red') 
+canvas.create_oval(endx-4, endy-4, endx+4, endy+4, outline = 'black', fill='red')
+
+              
+
+#pixel = tk.PhotoImage(width=5, height=5)
+#
+#button = tk.Button(text=str(0), width=5, height=5,
+#                       image=pixel, compound="center", padx=0, pady=0)
+#button.place(x=startx,y=starty)          
+              
+     
+
+
+f.close()
+
+
+
+#### A* STARTS FROM HERE
+
+f = open("grid.txt", "r")
+
+# some sort of list with 0's and 1's for blocked and blocked in order of the coordinates use an array
+
+# corr coordinate is (x-1)*50 + 2 + y only +1 not +2 bcs the file starts at place 1 or no adding? just -1
+
+# manually find neightbors: 
+    # above: x,y+1
+    # below : x,y-1
+    # left: x-1,y
+    # right: x+1, y
+    # diagonal up right: x+1, y+1
+    # diagonal up left: x-1, y+1
+    # diagonal down right: x+1, y-1
+    # diagonal down left: x-1, y-1
+        # with diagonal how would we check for blocked... since only the top left is marked as blocked... this can happen if we go diagonally up right 
+            # do a case so that if the one directly above is blocked then we can't go top right
+
+        
+
+blocked = []
+gval = []
+parent = []
+successor = []
+path = []
+val =0
+
+
+#next(f) # skips the first two lines of the file with the start and end index since those are formated diff
+#next(f)
+
+place = 0 # to keep track of just the first two lines
+for line in f:
+    if place == 1:
+        endx, endy = line.split()
+        endx = int(endx)
+        endy = int(endy)
+        place = place+1
+    elif place == 0:
+        startx,starty = line.split()
+        startx = int(startx)
+        starty = int(starty)
+        place = place+1
+    else:
+        x,y,b = line.split() # don't rly need x and y we can find them on our own
+        b = int(b)
+        blocked.append(b) 
+        gval.append(float('inf')) # all the g vals are initialy 0
+        parent.append([0,0]) # all of the parents are just (0,0) initially
+
+
+#print(startx)
+#print(starty)
+#print(endx)
+#print(endy)
+#print(blocked) #this was just to test that it was working to an extent
+
+fringe = [] # can insert before other elements according to the distance 
+
+closed = [] #set() # no duplicates allowed and can find if smtg is in it or not and order of adding doesn't matter
+
+
+#endx = 36
+#endy = 0
+
+def heuristic(x,y):
+   #return 0
+   a = math.sqrt(2)
+   e = min(abs(x-endx), abs(y-endy))
+   i = max(abs(x-endx), abs(y-endy))
+   o = min(abs(x-endx), abs(y-endy))
+   u = (a*e) + i - o
+   
+   return u
+   #return ((math.sqrt(2)* min(abs(x-36)-abs(y-0)))+max(abs(x-36)-abs(y-0))-min(abs(x-36)-abs(y-0)))
+   #return (math.sqrt(2)* min(abs(x-endx)-abs(y-endy)))+  max(abs(x-endx)-abs(y-endy))-min(abs(x-endx)-abs(y-endy))
+
+
+def findIndex (x,y): # gives the index for the arrays for gval and parent
+    return ((x-1)*50) + y -1
+
+def cfunc(a, b, c, d): # finds the distance btwn two points
+    xd = c-a
+    xd = math.pow(xd,2)
+    yd = d-b
+    yd = math.pow(yd,2)
+    d = math.sqrt(xd+yd)
+    return d
+
+def elementOf(x, y): # using an array with the elements in the format [x,y], val; want to know if a certain coordinate is already in the array
+    if (len(fringe) == 0):
+        return 0
+
+    for i in (0,len(fringe)-1):
+        xval = fringe[i][0][0] 
+        yval = fringe[i][0][1]
+        if x == xval and y == yval:
+            return 1 # 1 if the coordinate is in the array already
+    return 0
+
+def cElementOf(x, y): # using an array with the elements in the format [x,y], val; want to know if a certain coordinate is already in the array
+    if (x,y) not in closed:
+        return 0
+    else:
+        return 1   
+
+def remove(x,y): # want to remove a certain coordinate from the array again in the format [x,y],val
+    if (len(fringe) == 0):
+        return
+
+    for i in (0,len(fringe)-1):
+        xval = fringe[i][0][0]
+        yval = fringe[i][0][1]
+        if x == xval and y == yval:
+            fringe.pop(i)
+            return
+
+def insert(x, y, val): # insert to an array of format [x,y]
+    if(len(fringe) == 0): # if the array has ntg in it, just append
+        fringe.append([[x,y],val])
+        return 
+
+    for i in (0,len(fringe)-1): # if the array has values, to make it a priority queue, insert it a certain way
+        value = fringe[i][1]
+        if (val>value):
+            fringe.insert(i,[[x,y],val]) # insert in a way that the first element will be smallest and we go in increasing order and the last is the largest val
+            return
+    fringe.append([[x,y],val]) # add to the end if it has the smallest val
+
+
+def UpdateVertex(a,b, c, d): 
+    index_s = findIndex(a,b)
+    index_sprime = findIndex(c,d)
+    cval = cfunc(a,b,c,d)
+
+    if gval[index_s] + cval < gval[index_sprime]:
+        gval[index_sprime] = gval[index_s] +cval
+        parent[index_sprime] = [a,b]
+        if elementOf(c,d):
+            remove(c,d)
+        
+        val = gval[index_sprime] + heuristic(c,d)
+        insert(c, d, val)
+    else: # this changed nothing
+        if not elementOf(c,d):
+            val = gval[index_sprime] + heuristic(c,d)
+            insert(c,d,val)
+        
+
+
+
+#instead of this use startx and starty
+
+
+successor = [] 
+
+def findSuccessor (x,y): # finding the 8 neighbors # ERROR WAS HERE # HAD TO USE MINUS IF LOOKING AT BLOCK ABOVE FOR Y
+    if (x+1 < 101):
+        if (y == 1):
+            if not(blocked[findIndex(x,y)] == 1):
+                successor.append([x+1,y])
+        elif(y == 50):
+            if not(blocked[findIndex(x,y-1)] == 1):
+                successor.append([x+1,y])
+        elif not ((blocked[findIndex(x,y-1)] == 1) and (blocked[findIndex(x,y)]==1)): 
+                successor.append([x+1,y])
+
+        if ((y-1 > 0) and (blocked[findIndex(x,y-1)] == 0)): # we aren't going diagonal up right through a blocked one
+            successor.append([x+1,y-1]) # y+1 < 51 actually goes.... down
+
+        if((y+1<51) and (blocked[findIndex(x,y)] == 0)): #don't go diagonally down right through blocked one
+            successor.append([x+1,y+1])
+
+    if (x-1 > 0):
+        if y == 1:
+            if not(blocked[findIndex(x-1,y)] == 1):
+                successor.append([x-1,y])
+        elif y == 50:
+            if not(blocked[findIndex(x-1,y-1)] == 1):
+                successor.append([x-1,y])
+        elif not((blocked[findIndex(x-1,y)] == 1) and (blocked[findIndex(x-1,y-1)] == 1)):
+            successor.append([x-1,y])
+        
+        if((y-1 > 0) and (blocked[findIndex(x-1,y-1)] == 0)): # we aren't going diagonal up left through a blocked one
+            successor.append([x-1,y-1]) # y+1 <51 brings us down not up
+        if((y+1 < 51) and (blocked[findIndex(x-1,y)] == 0)): # not going diagonally down left
+            successor.append([x-1,y+1])
+
+    if(y+1 < 51):
+        if x==1:
+            if not (blocked[findIndex(x,y)] == 1):
+                successor.append([x,y+1])
+        elif x == 100:
+            if not(blocked[findIndex(x-1,y)] == 1):
+                successor.append([x,y+1])
+        elif not ((blocked[findIndex(x,y)] == 1) and (blocked[findIndex(x-1,y)] == 1)):
+            successor.append([x,y+1])
+
+    if(y-1 > 0):
+        if x == 1:
+            if not(blocked[findIndex(x,y-1)] == 1):
+                successor.append([x,y-1])
+        elif x == 100:
+            if not(blocked[findIndex(x-1,y-1)] == 1):
+                successor.append([x,y-1])
+        elif not((blocked[findIndex(x,y-1)] == 1) and (blocked[findIndex(x-1,y-1)] == 1)):
+            successor.append([x,y-1])
+
+def makePath(x,y):
+    path.append([x,y])
+    index = findIndex(x,y)
+    [px,py] = parent[index]
+    
+
+def traceBack (x,y):
+    index = findIndex(x,y)
+    [px,py] = parent[index]
+    xi = x
+    yi = y
+
+    
+    while not(xi == startx and yi == starty):
+        i = px*10
+        j = py*10
+        # need 8 cases type of thing for each dir plus more for blocked
+
+        if(xi-px == 1): # from px we went to the right
+            if yi-py == 1:
+                #canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'blue') # from px we went down diagonal path
+                createbutton(i,j,gval)     
+ 
+            elif yi-py == -1:
+                #canvas.create_rectangle(i, j+10, i+10, j, outline = 'black',fill = 'blue') # from px we went up diagonal path
+                createbutton(i,j,gval)     
+ 
+            else:
+                #went to the right above a blocked one
+                if(gval[findIndex(px,py)] == 1 or py == 50): # the one above a blocked one CANNOT be blocked if we went to the right over it
+                   #canvas.create_rectangle(i, j-10, i+10, j, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+ 
+                else: # went to the right above an unblocked one
+                    #canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+
+        elif(xi-px == -1): # from px we went to the left
+            if yi-py == 1:
+                #canvas.create_rectangle(i-10, j, i, j+10, outline = 'black',fill = 'blue') # from px we went down diagonal path
+                createbutton(i,j,gval)     
+ 
+            elif yi-py == -1:
+                #canvas.create_rectangle(i-10, j+10, i, j, outline = 'black',fill = 'blue') # from px we went up diagonal path
+                createbutton(i,j,gval)     
+ 
+            else:
+                #went to the left above a blocked one
+                if(gval[findIndex(px-1,py)] == 1 or py == 50): # the one above a blocked one CANNOT be blocked if we went to the left over it
+                    #canvas.create_rectangle(i-10, j-10, i, j, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+ 
+                else: # went to the left above an unblocked one
+                    #canvas.create_rectangle(i-10, j, i, j+10, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+
+        else: # didn't move left or right
+            if(yi-py == 1): # went down
+                if(gval[findIndex(px,py)] == 1 or px == 100): # the one to the right is blocked or at the edge
+                    #canvas.create_rectangle(i-10, j, i, j+10, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+ 
+                else:
+                    #canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+
+            elif(yi-py == -1): # went up
+                if(gval[findIndex(px,py-1)] == 1 or px == 100): # the one to the right is blocked or at edge
+                    #canvas.create_rectangle(i-10, j-10, i, j, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+
+                else:
+                    #canvas.create_rectangle(i, j-10, i+10, j, outline = 'black',fill = 'blue')
+                    createbutton(i,j,gval)     
+        #canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'blue')
+        indexP = findIndex(px,py)
+        xi = px
+        yi = py
+        [px,py] = parent[indexP]
+        
+
+# but what if it goes across a blocked square... not actually going inside but across the top or the left?
+# go to the one above? but we don't know if it is going across and how?
+# also what if the first move is going left or up, so then we don't exactly fill in the square for startx,starty
+
+def onClick():
+    tk.messagebox.showinfo("Gval",val)
+
+def createbutton(i,j,gval):
+    pixel = tk.PhotoImage(width=200, height=200)
+    button = tk.Button(text=".", width=1, height=1, command= onClick , compound="center", padx=0, pady=0)
+#    button = tk.Button(text=".", width=5, height=5, image = pixel,command= onClick, compound="center", padx=0, pady=0)
+# if you the other button it looks much better but isnt able to be clicked 
+    button.place(x=i,y=j) 
+
+def tracetest():
+    index = findIndex(endx,endy)
+    [px,py] = parent[index]
+
+    while not (px == startx and py == starty):
+        print(parent[index])
+        index = findIndex(px,py)
+        [px,py] = parent[index]
+
+
+
+
+def main():
+    indexS = findIndex(startx,starty)
+    gval[indexS] = 0
+    parent[indexS] = [startx,starty]
+    val = gval[indexS] #+heuristic(startx,starty)
+    insert(startx,starty,val)
+
+    while len(fringe) != 0:
+        #print(fringe)
+        [[x,y],v] = fringe.pop()
+        #print(x)
+        #print(y)
+        #print(v)
+        if x == endx and y == endy:
+            #print(gval)
+            print("path found")
+            #print(parent) # at the end EVERY SINGLE vertex HAS a parent
+            #
+            traceBack(x,y)
+            #tracetest()
+            #print("TRACETEST RAN")
+            return
+            #window.mainloop()
+            #sys.exit()
+
+
+        #closed.add((x,y))
+        closed.append((x,y))
+        #canvas.create_rectangle(x*10, y*10, (x*10)+10, (y*10)+10, outline = 'black',fill = 'yellow')
+        #successor = []
+        findSuccessor(x,y)
+        #print(successor)
+        
+
+        while len(successor) != 0:
+            [sx,sy] = successor.pop()
+            if not cElementOf(sx, sy):# (sx, sy) in closed:
+                if not elementOf(sx,sy):
+                    si = findIndex(sx,sy)
+                    gval[si] = float('inf')
+                    parent[si] = None ##[x,y] # changed from None
+                UpdateVertex(x,y,sx,sy)
+        #print(successor) # should be empty
+        #print(fringe)
+
+    print("no path found")
+    return 
+    
+
+
+    
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+window.mainloop()
