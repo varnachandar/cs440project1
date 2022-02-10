@@ -4,7 +4,6 @@ import math
 from turtle import back, onclick
 from tkinter.ttk import*
 from tkinter import*
-from functools import partial
 
 # global variables
 blocked = [] # 0 if unblocked, 1 if blocked
@@ -329,15 +328,7 @@ def traceBack(path,startx,starty,endx,endy): # used to trace the path from the s
     canvas.create_oval((endx*17)-7, (endy*17)-7, (endx*17)+7, (endy*17)+7, outline = 'black', fill='green')
 
 #Button Method
-def onClick(g,h,f):
-    
-    tk.messagebox.showinfo("g: {gval} , h: {hval}, f: {fval}".format(gval = g, hval = h, fval = f))
-
-def createbutton(i,j, gval,endx,endy,A_t):
-    f = Frame(window, height = 5, width = 5, bg = 'orange')
-    f.pack_propagate(0)
-    f.place(x = i*17, y = j*17)
-    
+def onClick(gval,i,j,endx,endy,A_t):
     index = findIndex(i,j)
     g = gval[index]
     if (A_t == 0):
@@ -345,15 +336,20 @@ def createbutton(i,j, gval,endx,endy,A_t):
     else:
         h = thetaHeuristic(i,j,endx,endy)
     f = g+h
-    action_with_arg = partial(onClick, g,f,h)
-    
-    button = Button(f, width=5, height=5, command = action_with_arg, compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
+    tk.messagebox.showinfo("g: {gval} , h: {hval}, f: {fval}".format(gval = g, hval = h, fval = f))
+
+def createbutton(i,j, gval,endx,endy,A_t):
+    f = Frame(window, height = 5, width = 5, bg = 'orange')
+    f.pack_propagate(0)
+    f.place(x = i*17, y = j*17)
+
+    button = Button(f, width=5, height=5, command = onClick(gval,i,j,endx,endy,A_t) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
     button.pack(fill = BOTH, expand = 1)
     #button.place(x=i,y=j) 
 
 def buttons(makeButton,gval,A_t,endx,endy):
     while (len(makeButton) != 0):
-        [x,y] = closed.pop()
+        [x,y] = makeButton.pop()
         createbutton(x,y,gval,endx,endy,A_t)
   
 
@@ -378,9 +374,8 @@ def A_star(a,b,c,d,blocked,gval,parent):
             print("path found")
             path = []
             path = createPath(parent,startx,starty,endx,endy,path)
-            buttons(makeButton,gval,0,endx,endy)
             traceBack(path,startx,starty,endx,endy)
-            
+            buttons(makeButton,gval,0,endx,endy)
             return
             
         closed.append((x,y))
