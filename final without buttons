@@ -323,12 +323,12 @@ def traceBack(path,startx,starty,endx,endy): # used to trace the path from the s
 
 #Button Method
 def onClick():
-    tk.messagebox.showinfo("Gval")
+    tk.messagebox.showinfo("Gval", "Gval, Hval and Fval")
 
 def createbutton(i,j):
     
     pixel = tk.PhotoImage()
-    button = tk.Button( width=1, height=1, command= onClick , compound="center", padx=0, pady=0)
+    button = tk.Button( width=1, height=1, command= onClick , compound="center", padx=0, pady=0 ,text ="_")
 #    button = tk.Button( window, width=5, height=5, image = pixel,command=onClick, compound="center", padx=0, pady=0)
 # if you the other button it looks much better but isnt able to be clicked 
     button.place(x=i,y=j) 
