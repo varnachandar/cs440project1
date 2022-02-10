@@ -60,8 +60,8 @@ def makeGrid(filename):
                 canvas.create_rectangle(i, j, i+10, j+10, outline = 'black',fill = 'white')
 
     # use red circle for start and green for the end
-    canvas.create_oval((startx*10)-4, (starty*10)-4, (startx*10)+4, (starty*10)+4, outline = 'black', fill='red') 
-    canvas.create_oval((endx*10)-4, (endy*10)-4, (endx*10)+4, (endy*10)+4, outline = 'black', fill='green')
+    canvas.create_oval((startx*10)-7, (starty*10)-7, (startx*10)+7, (starty*10)+7, outline = 'black', fill='red') 
+    canvas.create_oval((endx*10)-7, (endy*10)-7, (endx*10)+7, (endy*10)+7, outline = 'black', fill='green')
 
     f.close()
     return [startx,starty,endx,endy,blocked,gval,parent]
@@ -318,10 +318,10 @@ def traceBack(path,startx,starty,endx,endy): # used to trace the path from the s
         py = yi
     
     # plot the start and end again so that it is above all of the shading - just for clarity purpose
-    canvas.create_oval((startx*10)-4, (starty*10)-4, (startx*10)+4, (starty*10)+4, outline = 'black', fill='red') 
-    canvas.create_oval((endx*10)-4, (endy*10)-4, (endx*10)+4, (endy*10)+4, outline = 'black', fill='green')
+    canvas.create_oval((startx*10)-7, (starty*10)-7, (startx*10)+7, (starty*10)+7, outline = 'black', fill='red') 
+    canvas.create_oval((endx*10)-7, (endy*10)-7, (endx*10)+7, (endy*10)+7, outline = 'black', fill='green')
 
-#Button Method
+#Button Method add the values here 
 def onClick():
     tk.messagebox.showinfo("Gval", "Gval, Hval and Fval")
 
@@ -473,8 +473,8 @@ def thetaTraceBack(path,startx,starty,endx,endy): # used to trace the path from 
         py = yi
     
     # plot the start and end again so that it is above all of the shading - just for clarity purpose
-    canvas.create_oval((startx*10)-4, (starty*10)-4, (startx*10)+4, (starty*10)+4, outline = 'black', fill='red') 
-    canvas.create_oval((endx*10)-4, (endy*10)-4, (endx*10)+4, (endy*10)+4, outline = 'black', fill='green')
+    canvas.create_oval((startx*10)-7, (starty*10)-7, (startx*10)+7, (starty*10)+7, outline = 'black', fill='red') 
+    canvas.create_oval((endx*10)-7, (endy*10)-7, (endx*10)+7, (endy*10)+7, outline = 'black', fill='green')
 
 def theta(startx,starty,endx,endy,blocked,gval,parent):
     indexS = findIndex(startx,starty)
