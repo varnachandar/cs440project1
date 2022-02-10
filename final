@@ -338,22 +338,33 @@ def onClick(gval,i,j,endx,endy,A_t):
     f = g+h
     tk.messagebox.showinfo("coordinate: ({x}, {y})".format(x = i, y = j), "g: {gval} \n h: {hval} \n  f: {fval}".format(gval = g, hval = h, fval = f))
 
-def createbutton(i,j, gval,endx,endy,A_t):
+def createbutton(i,j, gval,endx,endy,A_t,path):
     f = Frame(window, height = 8, width = 8, bg = 'orange')
     f.pack_propagate(0)
     f.place(x = i*17-4, y = j*17-4)
 
-    button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
-    button.pack(fill = BOTH, expand = 1)
-    #button.place(x=i,y=j) 
+    if (path == 1):
+        button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'blue')
 
-def buttons(makeButton,gval,A_t,endx,endy):
+    else: 
+        button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
+    
+    button.pack(fill = BOTH, expand = 1)
+ 
+
+def buttons(makeButton,gval,A_t,endx,endy,path):
     while (len(makeButton) != 0):
         [x,y] = makeButton.pop()
-        createbutton(x,y,gval,endx,endy,A_t)
+        if [x,y] in path:
+            createbutton(x,y,gval,endx,endy,A_t,1)
+        else:
+            createbutton(x,y,gval,endx,endy,A_t,0)
     while(len(fringe) != 0):
         [x,y],v = fringe.pop()
-        createbutton(x,y,gval,endx,endy,A_t)
+        if [x,y] in path:
+            createbutton(x,y,gval,endx,endy,A_t,1)
+        else:
+            createbutton(x,y,gval,endx,endy,A_t,0)
 
   
 
@@ -378,8 +389,8 @@ def A_star(a,b,c,d,blocked,gval,parent):
             print("path found")
             path = []
             path = createPath(parent,startx,starty,endx,endy,path)
-            traceBack(path,startx,starty,endx,endy)
-            buttons(makeButton,gval,0,endx,endy)
+            buttons(makeButton,gval,0,endx,endy,path)
+            thetaTraceBack(path,startx,starty,endx,endy)
             return
             
         closed.append((x,y))
@@ -517,8 +528,9 @@ def theta(startx,starty,endx,endy,blocked,gval,parent):
             print("path found")
             path = []
             path = createPath(parent,startx,starty,endx,endy,path)
+            buttons(makeButton,gval,1,endx,endy,path)
             thetaTraceBack(path,startx,starty,endx,endy)
-            buttons(makeButton,gval,1,endx,endy)
+            
             return 
 
         closed.append((x,y))
@@ -549,6 +561,8 @@ def main():
         A_star(startx,starty,endx,endy,blocked,gval,parent)
     elif(method == "Theta"):
         theta(startx,starty,endx,endy,blocked,gval,parent)
+    
+
 
 if __name__ == "__main__":
     main()
