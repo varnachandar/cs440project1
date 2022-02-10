@@ -4,6 +4,7 @@ import math
 from turtle import back, onclick
 from tkinter.ttk import*
 from tkinter import*
+from functools import partial
 
 # global variables
 blocked = [] # 0 if unblocked, 1 if blocked
@@ -13,6 +14,7 @@ parent = [] # holds the parents of a vertex
 #path = [] # used at the end to assemble the path
 fringe = [] # open list
 closed = [] # closed list
+makeButton = []
 
 
 # create the Tkinter window
@@ -26,7 +28,7 @@ def makeGrid(filename):
 
     coordinates = set() # used to keep track of the blocked areas
     place = 0
-
+    
     #read the file and extract the necessary parts
     for line in f:
         if place == 1:
@@ -38,6 +40,9 @@ def makeGrid(filename):
             startx,starty = line.split()
             startx = int(startx)
             starty = int(starty)
+            place = place+1
+        elif place == 2:
+            dim1, dim2 = line.split()
             place = place+1
         else:
             x,y,b = line.split() 
@@ -224,98 +229,98 @@ def traceBack(path,startx,starty,endx,endy): # used to trace the path from the s
             i = (px-1)*17
             j = (py-1)*17
             canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-            createbutton(i,j)     
+            #createbutton(i,j)     
 
         elif((px-xi==1) and (py-yi == -1)): #left and down ~ diagonal
             i = (px-1)*17
             j = py*17
             canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-            createbutton(i,j)     
+            #createbutton(i,j)     
 
         elif((px-xi == -1) and (py-yi == 1)): # right and up ~ diagonal
             i = px*17
             j = (py-1)*17
             canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-            createbutton(i,j)     
+            #createbutton(i,j)     
 
         elif((px-xi == -1) and (py-yi == -1)): # right and down ~ diagonal
             i = px*17
             j = py*17
             canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-            createbutton(i,j)     
+            #reatebutton(i,j)     
 
         elif((px-xi == 1) and (py-yi == 0)): # only moved left
             if(py == 1): # if y = 1 shade the one below
                 i = (px-1)*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+            #   createbutton(i,j)     
 
             elif(blocked[findIndex(px-1,py-1)] == 1): # if the one above is blocked shade the one below
                 i = (px-1)*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)  
+             #   createbutton(i,j)  
             else: # shade above if there are no restrictions
                 i = (px-1)*17
                 j = (py-1)*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+              #  createbutton(i,j)     
 
         elif((px-xi == -1) and (py-yi == 0)): # only moved right
             if(py == 1): # if y = 1 shade the one below
                 i = px*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+               # createbutton(i,j)     
 
             elif(blocked[findIndex(px,py-1)] == 1): # if the one above is blocked shade the one below
                 i = px*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
 
             else: # shade above if there are no restrictions
                 i = px*17
                 j = (py-1)*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
 
         elif((px-xi == 0) and (py-yi == 1)): # only moved up
             if(px == 100): # if x = 100 shade the one on the left
                 i = (px-1)*17
                 j = (py-1)*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
 
             elif(blocked[findIndex(px,py-1)] == 1): # if the one on the right is blocked shade the one on the left
                 i = (px-1)*17
                 j = (py-1)*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
 
             else: # shade the one on the right if there are no restrictions
                 i = px*17
                 j = (py-1)*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
                 
         elif((px-xi == 0) and (py -yi == -1)): # only moved down
             if(px == 100): # if x = 100 shade the one on the left
                 i = (px-1)*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
             elif(blocked[findIndex(px,py-1)] == 1): # if the one on the right is blocked shade the one on the left
                 i = (px-1)*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
             else: # shade the one on the right if there are no restrictions
                 i = px*17
                 j = py*17
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'blue')
-                createbutton(i,j)     
+                #createbutton(i,j)     
         px = xi
         py = yi
     
@@ -324,22 +329,34 @@ def traceBack(path,startx,starty,endx,endy): # used to trace the path from the s
     canvas.create_oval((endx*17)-7, (endy*17)-7, (endx*17)+7, (endy*17)+7, outline = 'black', fill='green')
 
 #Button Method
-def onClick():
-    tk.messagebox.showinfo("Gval")
-
-def createbutton(i,j):
+def onClick(g,h,f):
     
-    #pixel = PhotoImage(file = 'circle.png')
-    #img_label = Label(image = pixel)
+    tk.messagebox.showinfo("g: {gval} , h: {hval}, f: {fval}".format(gval = g, hval = h, fval = f))
+
+def createbutton(i,j, gval,endx,endy,A_t):
     f = Frame(window, height = 5, width = 5, bg = 'orange')
     f.pack_propagate(0)
-    f.place(x = i, y = j)
-
-    button = Button(f, width=5, height=5, command = onClick , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
-#    button = tk.Button( window, width=5, height=5, image = pixel,command=onClick, compound="center", padx=0, pady=0)
-# if you the other button it looks much better but isnt able to be clicked 
+    f.place(x = i*17, y = j*17)
+    
+    index = findIndex(i,j)
+    g = gval[index]
+    if (A_t == 0):
+        h = heuristic(i,j,endx,endy)
+    else:
+        h = thetaHeuristic(i,j,endx,endy)
+    f = g+h
+    action_with_arg = partial(onClick, g,f,h)
+    
+    button = Button(f, width=5, height=5, command = action_with_arg, compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
     button.pack(fill = BOTH, expand = 1)
     #button.place(x=i,y=j) 
+
+def buttons(makeButton,gval,A_t,endx,endy):
+    while (len(makeButton) != 0):
+        [x,y] = closed.pop()
+        createbutton(x,y,gval,endx,endy,A_t)
+  
+
 
 
 # A*
@@ -353,14 +370,17 @@ def A_star(a,b,c,d,blocked,gval,parent):
     parent[indexS] = [startx,starty]
     val = gval[indexS] +heuristic(startx,starty,endx,endy)
     insert(startx,starty,val)
-
+   
     while len(fringe) != 0:
         [[x,y],v] = fringe.pop()
+        makeButton.append([x,y])
         if x == endx and y == endy:
             print("path found")
             path = []
             path = createPath(parent,startx,starty,endx,endy,path)
+            buttons(makeButton,gval,0,endx,endy)
             traceBack(path,startx,starty,endx,endy)
+            
             return
             
         closed.append((x,y))
@@ -493,14 +513,14 @@ def theta(startx,starty,endx,endy,blocked,gval,parent):
 
     while len(fringe) != 0:
         [[x,y],v] = fringe.pop()
-       
+        makeButton.append([x,y])
         if x == endx and y == endy:
             print("path found")
             path = []
             path = createPath(parent,startx,starty,endx,endy,path)
             print(path)
             thetaTraceBack(path,startx,starty,endx,endy)
-            
+            buttons(makeButton,gval,1,endx,endy)
             return 
 
         closed.append((x,y))
