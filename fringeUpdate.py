@@ -9,8 +9,7 @@ blocked = [] # 0 if unblocked, 1 if blocked
 gval = [] # holds the g(n)
 parent = [] # holds the parents of a vertex
 fringe = [] # open list
-fval = [] # holds the f(n)
-closed = [] # closed list
+closed = set() # closed list
 makeButton = [] # holds the vertices that need buttons
 
 
@@ -51,7 +50,6 @@ def makeGrid(filename):
             
             blocked.append(b) # getting the info abt blocked vs unblocked
             gval.append(float('inf')) # all the g vals are initialy infinity
-            fval.append(0) # all f vals are initially 0
             parent.append([0,0]) # all of the parents are just (0,0) initially
         
 
@@ -76,54 +74,46 @@ def findIndex (x,y): # gives the index for the arrays for gval,blocked and paren
     return ((x-1)*50) + y -1
 
 # closed list method:
-def cElementOf(x, y): # using closed array with the elements in the format (x,y)and want to know if a certain coordinate is already in the array
+def cElementOf(x, y): # using closed set with the elements in the format (x,y)and want to know if a certain coordinate is already in the set, now runs in O(1) time where previously closed was a list and ran in O(n) time
     if (x,y) not in closed:
         return 0
     else:
         return 1
 
 # fringe methods: elements of the array (priority queue) are in the format [x,y],val
-# won't need this anymore with new fringe way can just use cElementOf which is in o(1) time, while this was o(n)
-#def elementOf(x, y): # want to know if a certain coordinate is already in the fringe 
- #   if (len(fringe) == 0):
-  #      return 0
+def elementOf(x, y): # want to know if a certain coordinate is already in the fringe
+    if (len(fringe) == 0):
+        return 0
 
-#    for i in (0,len(fringe)-1):
- #       xval = fringe[i][0][0] 
-  #      yval = fringe[i][0][1]
-   #     if x == xval and y == yval:
-    #        return 1 
-   # return 0
+    for i in (0,len(fringe)-1):
+        xval = fringe[i][0][0] 
+        yval = fringe[i][0][1]
+        if x == xval and y == yval:
+            return 1 
+    return 0
 
 def remove(x,y): # want to remove a certain coordinate from the fringe
-    fringe.remove([x,y])
-    # don't need the code below which was o(n) time, now can do in o(1) time
-    #if (len(fringe) == 0):
-     #   return
+    if (len(fringe) == 0):
+        return
 
-    #for i in (0,len(fringe)-1):
-     #   xval = fringe[i][0][0]
-      #  yval = fringe[i][0][1]
-      #  if x == xval and y == yval:
-       #     fringe.pop(i)
-        #    return
+    for i in (0,len(fringe)-1):
+        xval = fringe[i][0][0]
+        yval = fringe[i][0][1]
+        if x == xval and y == yval:
+            fringe.pop(i)
+            return
 
 def insert(x, y, val): # want to insert a certain coordinate and value into the fringe
-    firstIndex = findIndex(x,y)
-    fval[firstIndex] = val
-
     if(len(fringe) == 0): # if the array has ntg in it, just add it
-        fringe.append([x,y])#,val])
+        fringe.append([[x,y],val])
         return 
-    
+
     for i in (0,len(fringe)-1): # if the array has values, to make it a priority queue, insert it a certain way
-        [xval,yval] = fringe[i]
-        index = findIndex(xval,yval)
-        value = fval[index]
+        value = fringe[i][1]
         if (val>value):
-            fringe.insert(i,[x,y]) # insert in a way that the first element will be largest -> go in decreasing order and the last is the smallest val (this gets popped first)
+            fringe.insert(i,[[x,y],val]) # insert in a way that the first element will be largest -> go in decreasing order and the last is the smallest val (this gets popped first)
             return
-    fringe.append([x,y]) # if it gets through the for loop without adding, add to the end if it has the smallest val
+    fringe.append([[x,y],val]) # if it gets through the for loop without adding, add to the end if it has the smallest val
 
 # c function
 def cfunc(a, b, c, d): # finds the distance btwn two points
@@ -248,7 +238,7 @@ def buttons(makeButton,gval,A_t,endx,endy,path):
         else:
             createbutton(x,y,gval,endx,endy,A_t,0)
     while(len(fringe) != 0):
-        [x,y] = fringe.pop()
+        [x,y],v = fringe.pop()
         if [x,y] in path:
             createbutton(x,y,gval,endx,endy,A_t,1)
         else:
@@ -274,7 +264,7 @@ def UpdateVertex(a,b, c, d, gval,endx,endy):
     if gval[index_s] + cval < gval[index_sprime]:
         gval[index_sprime] = gval[index_s] +cval
         parent[index_sprime] = [a,b]
-        if cElementOf(c,d):
+        if elementOf(c,d):
             remove(c,d)
         
         val = gval[index_sprime] + heuristic(c,d,endx,endy)
@@ -293,7 +283,7 @@ def A_star(a,b,c,d,blocked,gval,parent):
     insert(startx,starty,val)
    
     while len(fringe) != 0:
-        [x,y] = fringe.pop()
+        [[x,y],v] = fringe.pop()
         makeButton.append([x,y])
         if x == endx and y == endy:
             print("path found")
@@ -303,7 +293,7 @@ def A_star(a,b,c,d,blocked,gval,parent):
             traceBack(path,startx,starty,endx,endy)
             return
             
-        closed.append((x,y))
+        closed.add((x,y))
         
         successor = []
         successor = findSuccessor(x,y,blocked,successor) 
@@ -311,7 +301,7 @@ def A_star(a,b,c,d,blocked,gval,parent):
         while len(successor) != 0:
             [sx,sy] = successor.pop()
             if not cElementOf(sx, sy):
-                if not cElementOf(sx,sy):
+                if not elementOf(sx,sy):
                     si = findIndex(sx,sy)
                     gval[si] = float('inf')
                     parent[si] = None 
@@ -396,7 +386,7 @@ def thetaUpdateVertex(px,py,x,y,sx,sy,gval,parent,endx,endy,blocked):
         if((gval[index_p]+ cval) < gval[index_sprime]):
             gval[index_sprime] = gval[index_p]+ cval
             parent[index_sprime] = [px,py]
-            if cElementOf(sx,sy):
+            if elementOf(sx,sy):
                 remove(sx, sy)
             val = gval[index_sprime]+ thetaHeuristic(sx,sy,endx,endy)
             insert(sx, sy, val)
@@ -405,7 +395,7 @@ def thetaUpdateVertex(px,py,x,y,sx,sy,gval,parent,endx,endy,blocked):
         if gval[index_s] + cval  < gval[index_sprime]:
             gval[index_sprime] = gval[index_s] + cval
             parent[index_sprime] = [x,y]
-            if cElementOf(sx,sy):
+            if elementOf(sx,sy):
                 remove(sx,sy)
             val = gval[index_sprime]+ thetaHeuristic(sx,sy,endx,endy)
             insert(sx,sy,val)
@@ -418,7 +408,7 @@ def theta(startx,starty,endx,endy,blocked,gval,parent):
     insert(startx,starty,val)
 
     while len(fringe) != 0:
-        [x,y] = fringe.pop()
+        [[x,y],v] = fringe.pop()
         makeButton.append([x,y])
         if x == endx and y == endy:
             print("path found")
@@ -429,15 +419,15 @@ def theta(startx,starty,endx,endy,blocked,gval,parent):
             
             return 
 
-        closed.append((x,y))
+        closed.add((x,y))
 
         successor = []
         successor = findSuccessor(x,y,blocked,successor)
 
         while len(successor) != 0:
             [sx,sy] = successor.pop()
-            if not (sx, sy) in closed:
-                if not cElementOf(sx,sy):
+            if (sx, sy) not in closed:
+                if not elementOf(sx,sy):
                     si = findIndex(sx,sy)
                     gval[si] = float('inf')
                 [px,py] = parent[findIndex(x,y)]
