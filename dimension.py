@@ -56,18 +56,18 @@ def makeGrid(filename):
             parent.append([0,0]) # all of the parents are just (0,0) initially
             
         
-    print(dim1)
-    print(dim2)
+    range1 = dim1*17
+    range2 = dim2*17
+
     # make a grid using what the file detailed, x goes from 1 to 100, y goes from 1 to 50, (1,1) is the top left corner   
-    for i in range (17,dim1*17,17): # the for loop makes the squares with size 10 across the entire canvas
-        for j in range(17,dim2*17,17): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
+    for i in range (17,range1,17): # the for loop makes the squares with size 10 across the entire canvas
+        for j in range(17,range2,17): # also in a sense we have coordinates now but in increments of 10 instead of 1, can't do one by one bcs then you just end up with a big black block since it is rly just the outlines smushed together
             if (i,j) in coordinates: # if the square is supposed to blocked it is filled gray, otherwise it is white
             #create rectangle has parameters x1,y1,x2,y2 where x1 y1 is the start coordinate and x2,y2 is the end coordinate
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black', fill='gray')
             else:
                 canvas.create_rectangle(i, j, i+17, j+17, outline = 'black',fill = 'white')
-            if i == 1700 and j == 850:
-                print("here")
+            
 
     # use red circle for start and green for the end
     canvas.create_oval((startx*17)-7, (starty*17)-7, (startx*17)+7, (starty*17)+7, outline = 'black', fill='red') 
@@ -135,53 +135,53 @@ def cfunc(a, b, c, d): # finds the distance btwn two points
 def findSuccessor (x,y,blocked,successor, dim1,dim2): 
     if (x+1 < dim1+1): # checking the right side
         if (y == 1): 
-            if not(blocked[findIndex(x,y)] == 1): # making sure it isn't on the top edge and has a blocked square below
+            if not(blocked[findIndex(x,y,dim2)] == 1): # making sure it isn't on the top edge and has a blocked square below
                 successor.append([x+1,y])
         elif(y == dim2):
-            if not(blocked[findIndex(x,y-1)] == 1): # making sure it isn't on the bottom edge and has a blocked square above
+            if not(blocked[findIndex(x,y-1,dim2)] == 1): # making sure it isn't on the bottom edge and has a blocked square above
                 successor.append([x+1,y])
-        elif not ((blocked[findIndex(x,y-1)] == 1) and (blocked[findIndex(x,y)]==1)): # making sure both above and below aren't blocked
+        elif not ((blocked[findIndex(x,y-1,dim2)] == 1) and (blocked[findIndex(x,y,dim2)]==1)): # making sure both above and below aren't blocked
                 successor.append([x+1,y])
 
-        if ((y-1 > 0) and (blocked[findIndex(x,y-1)] == 0)): # making sure it doesn't go diagonally up through a blocked square
+        if ((y-1 > 0) and (blocked[findIndex(x,y-1,dim2)] == 0)): # making sure it doesn't go diagonally up through a blocked square
             successor.append([x+1,y-1]) 
 
-        if((y+1< dim2+1) and (blocked[findIndex(x,y)] == 0)): # making sure it doesn't go diagonally down through a blocked square
+        if((y+1< dim2+1) and (blocked[findIndex(x,y,dim2)] == 0)): # making sure it doesn't go diagonally down through a blocked square
             successor.append([x+1,y+1])
 
     if (x-1 > 0): # checking the left side
         if y == 1:
-            if not(blocked[findIndex(x-1,y)] == 1): # making sure it isn't on the top edge and has a blocked square below
+            if not(blocked[findIndex(x-1,y,dim2)] == 1): # making sure it isn't on the top edge and has a blocked square below
                 successor.append([x-1,y])
         elif y == dim2:
-            if not(blocked[findIndex(x-1,y-1)] == 1): # making sure it isn't on the bottom edge and has a blocked square above
+            if not(blocked[findIndex(x-1,y-1,dim2)] == 1): # making sure it isn't on the bottom edge and has a blocked square above
                 successor.append([x-1,y])
-        elif not((blocked[findIndex(x-1,y)] == 1) and (blocked[findIndex(x-1,y-1)] == 1)): # making sure both above and below aren't blocked
+        elif not((blocked[findIndex(x-1,y,dim2)] == 1) and (blocked[findIndex(x-1,y-1,dim2)] == 1)): # making sure both above and below aren't blocked
             successor.append([x-1,y])
         
-        if((y-1 > 0) and (blocked[findIndex(x-1,y-1)] == 0)): # making sure it doesn't go diagonally up through a blocked square
+        if((y-1 > 0) and (blocked[findIndex(x-1,y-1,dim2)] == 0)): # making sure it doesn't go diagonally up through a blocked square
             successor.append([x-1,y-1]) 
-        if((y+1 < dim2+1) and (blocked[findIndex(x-1,y)] == 0)): # making sure it doesn't go diagonally down through a blocked square
+        if((y+1 < dim2+1) and (blocked[findIndex(x-1,y,dim2)] == 0)): # making sure it doesn't go diagonally down through a blocked square
             successor.append([x-1,y+1])
 
     if(y+1 < dim2+1): # checking below
         if x==1:
-            if not (blocked[findIndex(x,y)] == 1): # making sure it isn't on the left edge and has a blocked square to the right
+            if not (blocked[findIndex(x,y,dim2)] == 1): # making sure it isn't on the left edge and has a blocked square to the right
                 successor.append([x,y+1])
         elif x == dim1:
-            if not(blocked[findIndex(x-1,y)] == 1): # making sure it isn't on the right edge and has a blocked square to the left
+            if not(blocked[findIndex(x-1,y,dim2)] == 1): # making sure it isn't on the right edge and has a blocked square to the left
                 successor.append([x,y+1])
-        elif not ((blocked[findIndex(x,y)] == 1) and (blocked[findIndex(x-1,y)] == 1)): # making sure both the left and right aren't blocked
+        elif not ((blocked[findIndex(x,y,dim2)] == 1) and (blocked[findIndex(x-1,y,dim2)] == 1)): # making sure both the left and right aren't blocked
             successor.append([x,y+1])
 
     if(y-1 > 0): # checking above
         if x == 1: 
-            if not(blocked[findIndex(x,y-1)] == 1): # making sure it isn't on the left edge and has a blocked square to the right
+            if not(blocked[findIndex(x,y-1,dim2)] == 1): # making sure it isn't on the left edge and has a blocked square to the right
                 successor.append([x,y-1])
         elif x == dim1:
-            if not(blocked[findIndex(x-1,y-1)] == 1): # making sure it isn't on the right edge and has a blocked square to the left
+            if not(blocked[findIndex(x-1,y-1,dim2)] == 1): # making sure it isn't on the right edge and has a blocked square to the left
                 successor.append([x,y-1])
-        elif not((blocked[findIndex(x,y-1)] == 1) and (blocked[findIndex(x-1,y-1)] == 1)): # making sure both the left and right aren't blocked
+        elif not((blocked[findIndex(x,y-1,dim2)] == 1) and (blocked[findIndex(x-1,y-1,dim2)] == 1)): # making sure both the left and right aren't blocked
             successor.append([x,y-1])
     return successor
 
@@ -214,8 +214,8 @@ def traceBack(path,startx,starty,endx,endy): # used to trace the path from the s
 
 #Button Methods
 # method for when it is clicked
-def onClick(gval,i,j,endx,endy,A_t):
-    index = findIndex(i,j)
+def onClick(gval,i,j,endx,endy,A_t,dim2):
+    index = findIndex(i,j,dim2)
     g = gval[index]
     if (A_t == 0):
         h = heuristic(i,j,endx,endy)
@@ -224,32 +224,32 @@ def onClick(gval,i,j,endx,endy,A_t):
     f = g+h
     tk.messagebox.showinfo("coordinate: ({x}, {y})".format(x = i, y = j), "g: {gval} \n h: {hval} \n  f: {fval}".format(gval = g, hval = h, fval = f))
 # button formatting
-def createbutton(i,j, gval,endx,endy,A_t,path):
+def createbutton(i,j, gval,endx,endy,A_t,path,dim2):
     f = Frame(window, height = 8, width = 8, bg = 'orange')
     f.pack_propagate(0)
     f.place(x = i*17-4, y = j*17-4)
 
     if (path == 1):
-        button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'blue')
+        button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t,dim2) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'blue')
 
     else: 
-        button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
+        button = Button(f, width=8, height=8, command = lambda:onClick(gval,i,j,endx,endy,A_t,dim2) , compound="center", padx=0, pady=0, borderwidth = 1, bg = 'orange')
     
     button.pack(fill = BOTH, expand = 1)
 # creating all the buttons
-def buttons(makeButton,gval,A_t,endx,endy,path):
+def buttons(makeButton,gval,A_t,endx,endy,path,dim2):
     while (len(makeButton) != 0):
         [x,y] = makeButton.pop()
         if [x,y] in path:
-            createbutton(x,y,gval,endx,endy,A_t,1)
+            createbutton(x,y,gval,endx,endy,A_t,1,dim2)
         else:
-            createbutton(x,y,gval,endx,endy,A_t,0)
+            createbutton(x,y,gval,endx,endy,A_t,0,dim2)
     while(len(fringe) != 0):
         [x,y],v = fringe.pop()
         if [x,y] in path:
-            createbutton(x,y,gval,endx,endy,A_t,1)
+            createbutton(x,y,gval,endx,endy,A_t,1,dim2)
         else:
-            createbutton(x,y,gval,endx,endy,A_t,0)
+            createbutton(x,y,gval,endx,endy,A_t,0,dim2)
 
 
 # A* specific methods
@@ -295,8 +295,8 @@ def A_star(a,b,c,d,blocked,gval,parent,dim1,dim2):
         if x == endx and y == endy:
             print("path found")
             path = []
-            path = createPath(parent,startx,starty,endx,endy,path)
-            buttons(makeButton,gval,0,endx,endy,path)
+            path = createPath(parent,startx,starty,endx,endy,path,dim2)
+            buttons(makeButton,gval,0,endx,endy,path,dim2)
             traceBack(path,startx,starty,endx,endy)
             return
             
@@ -421,7 +421,7 @@ def theta(startx,starty,endx,endy,blocked,gval,parent,dim1,dim2):
             print("path found")
             path = []
             path = createPath(parent,startx,starty,endx,endy,path)
-            buttons(makeButton,gval,1,endx,endy,path)
+            buttons(makeButton,gval,1,endx,endy,path,dim2)
             traceBack(path,startx,starty,endx,endy)
             
             return 
