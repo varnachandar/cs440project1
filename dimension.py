@@ -389,7 +389,7 @@ def thetaUpdateVertex(px,py,x,y,sx,sy,gval,parent,endx,endy,blocked,dim2):
     cval = cfunc(px,py,sx,sy)
     index_s = findIndex(x,y,dim2)
 
-    if LineOfSight(px,py,sx,sy,blocked):
+    if LineOfSight(px,py,sx,sy,blocked,dim2):
         if((gval[index_p]+ cval) < gval[index_sprime]):
             gval[index_sprime] = gval[index_p]+ cval
             parent[index_sprime] = [px,py]
@@ -420,7 +420,7 @@ def theta(startx,starty,endx,endy,blocked,gval,parent,dim1,dim2):
         if x == endx and y == endy:
             print("path found")
             path = []
-            path = createPath(parent,startx,starty,endx,endy,path)
+            path = createPath(parent,startx,starty,endx,endy,path,dim2)
             buttons(makeButton,gval,1,endx,endy,path,dim2)
             traceBack(path,startx,starty,endx,endy)
             
@@ -437,7 +437,7 @@ def theta(startx,starty,endx,endy,blocked,gval,parent,dim1,dim2):
                 if not elementOf(sx,sy):
                     si = findIndex(sx,sy,dim2)
                     gval[si] = float('inf')
-                [px,py] = parent[findIndex(x,y)]
+                [px,py] = parent[findIndex(x,y,dim2)]
                 thetaUpdateVertex(px,py,x,y,sx,sy,gval,parent,endx,endy,blocked,dim2)
 
     print("no path found")
